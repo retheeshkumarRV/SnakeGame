@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Snake Game</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script>
+            function drawCircle(x,y,c){
+                ctx.beginPath();
+                ctx.arc(x,y,10, 0, 2 * Math.PI);
+                switch(c){
+                    case 0:
+                        ctx.fillStyle = "red";
+                        break;
+                    case 1:
+                        ctx.fillStyle = "black";
+                        break;
+                    case 2:
+                        ctx.fillStyle = "yellow";
+                        break;
+                }
+                ctx.fill();
+                ctx.stroke();
+                return true;
+            }
+            
+            function correctLength(){
+                if(turns != 0){
+                    len[turns]<tlen?len[turns]+=1:len[turns]=tlen;
+                    len[0]>0?len[0]-=1:len[0]=0;
+                    if(len[0]==0){
+                        for(var i=0;i<turns;i++){
+                            len[i] = len[i+1];
+                            dir[i] = dir[i+1];
+                        }
+                    turns--;
+                    }
+                }
+            }
+            
+            function detectCollision(){
+          //      document.getElementById("score").innerHTML = ctx.getImageData(x, y, 1, 1).data[3]; 
+                var colflag = false;
+                ctx.getImageData(x, y, 1, 1).data=="0,0,0,255"?colflag=true:colflag=colflag;
+                switch(dir[turns]){
+                    case 1:
+                        //x+=20;
+                        x>width?colflag=true:colflag=colflag;
+                        break;
+                    case 2:
+                        //y+=20;
+                        y>height?colflag=true:colflag=colflag;
+                        break;
+                    case 3:
+                        //x-=20;
+                        x<0?colflag=true:colflag=colflag;
+                        break;
+                    case 4:
+                        //y-=20;
+                        y<0?colflag=true:colflag=colflag;
+                        break;
+                }
+             //  document.getElementById("score").innerHTML = colflag.toString();
+                return colflag;
+            }
+            
+            function drawSnake(){
+                drawCircle(x,y,0);    
+                var tx=x,ty=y;
+                for(var i=turns;i>=0;i--){
+                    switch(dir[i]){
+                        case 1:
+                            for(var j=len[i];j>0;j--){
+                                tx-=20;
+                                drawCircle(tx,ty,1);
+                            }
+                            break;
+                        case 2:
+                            for(var j=len[i];j>0;j--){
+                                ty-=20;
+                                drawCircle(tx,ty,1);
+                            }
+                            break;
+                        case 3:
+                            for(var j=len[i];j>0;j--){
+                                tx+=20;
+                                drawCircle(tx,ty,1);
+                            }
+                            break;
+                        case 4:
+                            for(var j=len[i];j>0;j--){
+                                ty+=20;
+                                drawCircle(tx,ty,1);
+                            }
+                            break;
+                    }
+                }
+            }
+            
+            function reDraw(){
+                switch(dir[turns]){
+                    case 1:
+                        x+=20;
+                        break;
+                    case 2:
+                        y+=20;
+                        break;
+                    case 3:
+                        x-=20;
+                        break;
+                    case 4:
+                        y-=20;
+                        break;
+                }
+
+                if(detectAte()){
+                    getFood();
+                }    
+                                
+                if(detectCollision()){
+                    clearInterval(tim);
+                    return 0;
+                }
+                
+                ctx.clearRect(0,0,width,height);
+                drawSnake();
+                drawCircle(foodx,foody,2);
+                ctx.stroke();             
+                correctLength();
+            }
+
+            function checkKey(e) {
+                e = e || window.event;
+                if (e.keyCode == '38' && (dir[turns]!=2 && dir[turns]!=4)) {
+                    // up arrow
+                    len[turns]--;
+                    len[0]++;
+                    turns++;
+                    len[turns]=0;
+                    dir[turns]=4;
+                    correctLength();
+                }
+                else if (e.keyCode == '40' && (dir[turns]!=4 && dir[turns]!=2)) {
+                    // down arrow
+                    len[turns]--;
+                    len[0]++;
+                    turns++;
+                    len[turns]=0;
+                    dir[turns]=2;
+                    correctLength();
+                }
+                else if (e.keyCode == '37' && (dir[turns]!=1 && dir[turns]!=3)) {
+                    // left arrow
+                    len[turns]--;
+                    len[0]++;
+                    turns++;
+                    len[turns]=0;
+                    dir[turns]=3;
+                    correctLength();
+                }
+                else if (e.keyCode == '39' && (dir[turns]!=3 && dir[turns]!=1)) {
+                    // right arrow
+                    len[turns]--;
+                    len[0]++;
+                    turns++;
+                    len[turns]=0;
+                    dir[turns]=1;
+                    correctLength();
+                }
+            }
+            
+            function getFood(){
+                var x = Math.floor(Math.random() * (width - 40)) + 20;
+                foodx = x + (20 - ( x % 20 ));
+                var y = Math.floor(Math.random() * (height - 40)) + 20;
+                foody = y + (20 - ( y % 20 ));
+    //            document.getElementById("score").innerHTML = x + " " + y + " " + foodx + " " + foody;
+            }
+            
+            function detectAte(){
+            //    document.getElementById("score1").innerHTML = ctx.getImageData(x, y, 1, 1).data + " : " + x + " " + y; 
+                if(ctx.getImageData(x, y, 1, 1).data=="255,255,0,255"){
+                    return true;
+                }
+                return false;
+            }
+            
+        </script>
+    </head>
+    <body>
+        <label id="score"></label>
+        <label id="score1"></label>
+        <canvas id="myCanvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+        <script>
+            document.onkeydown = checkKey;
+            var height=500,width=500,x=20,y=260,dir=[1],turns=0,tlen=5,foodx,foody;
+            var c = document.getElementById("myCanvas");
+            var ctx = c.getContext("2d");
+            var len=[tlen];
+            getFood();
+            var tim = setInterval(reDraw, 300);
+        </script>
+    </body>
+</html>
